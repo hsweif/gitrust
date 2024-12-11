@@ -26,3 +26,16 @@ fn compute_object_sha1(data: &[u8]) -> String {
     let result = hasher.finalize();
     format!("{:x}", result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_object_sha1() {
+        let data = b"hello world\n";
+        let sha1 = compute_object_sha1(data);
+        // result from `echo 'hello world' | git cat-file stdin`
+        assert_eq!(sha1, "3b18e512dba79e4c8300dd08aeb37f8e728b8dad");
+    }
+}
