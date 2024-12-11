@@ -11,5 +11,16 @@ fn main() {
         Command::HashObject { path, stdin } => {
             commands::hash_object::execute(Command::HashObject { path, stdin })
         }
+        Command::CatFile {
+            hash,
+            type_flag,
+            contents_flag,
+            size_flag,
+        } => commands::cat_file::execute(Command::CatFile {
+            hash,
+            type_flag,
+            contents_flag,
+            size_flag,
+        }),
     }
 }

@@ -16,5 +16,14 @@ pub enum Command {
         #[clap(long)]
         stdin: bool,
     },
+    CatFile {
+        hash: String,
+        #[clap(short = 't')]
+        type_flag: bool,
+        #[clap(short = 'p')]
+        contents_flag: bool,
+        #[clap(short = 's')]
+        size_flag: bool,
+    },
     // ...other commands can be added here
 }

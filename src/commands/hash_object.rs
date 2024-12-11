@@ -2,11 +2,13 @@ use crate::cli::Command;
 use sha1::{Digest, Sha1};
 use std::io::{self, Read};
 
-pub fn execute(Command::HashObject { path, stdin }: Command) {
-    match (path, stdin) {
-        (Some(_path), false) => eprintln!("Not implemented yet"),
-        (None, true) => execute_stdin(),
-        _ => eprintln!("Invalid arguments"),
+pub fn execute(command: Command) {
+    if let Command::HashObject { path, stdin } = command {
+        match (path, stdin) {
+            (Some(_path), false) => eprintln!("Not implemented yet"),
+            (None, true) => execute_stdin(),
+            _ => eprintln!("Invalid arguments"),
+        }
     }
 }
 
