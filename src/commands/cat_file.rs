@@ -21,10 +21,10 @@ pub fn execute(command: Command) {
                     println!("{}", object_size);
                 } else if contents_flag {
                     if object_type == "tree" {
-                        println!("{}", parse_tree_object(&content));
+                        print!("{}", parse_tree_object(&content));
                     } else {
                         let content = str::from_utf8(&content).expect("Invalid UTF-8");
-                        println!("{}", content);
+                        print!("{}", content);
                     }
                 } else if type_flag {
                     println!("{}", object_type);
