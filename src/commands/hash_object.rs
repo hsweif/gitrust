@@ -96,7 +96,8 @@ mod tests {
     #[test]
     fn test_compute_object_sha1() {
         let data = b"hello world\n";
-        let sha1 = compute_blob_sha1(data);
+        let data = attach_blob_header(data);
+        let sha1 = compute_blob_sha1(&data);
         // result from `echo 'hello world' | git hash-object --stdin`
         assert_eq!(sha1, "3b18e512dba79e4c8300dd08aeb37f8e728b8dad");
     }
