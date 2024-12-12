@@ -15,6 +15,8 @@ pub enum Command {
         path: Option<Utf8PathBuf>,
         #[clap(long)]
         stdin: bool,
+        #[clap(short = 'w')]
+        write_flag: bool,
     },
     CatFile {
         hash: String,

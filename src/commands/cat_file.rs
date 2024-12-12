@@ -1,4 +1,5 @@
 use crate::cli::Command;
+use crate::objects::blob;
 use flate2::read::ZlibDecoder;
 use std::io::Read;
 use std::str;
@@ -12,7 +13,7 @@ pub fn execute(command: Command) {
     } = command
     {
         // TODO: parse git directory recursively
-        let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+        let path = blob::get_file_path(&hash);
         match std::fs::read(&path) {
             Ok(data) => {
                 let (object_size, object_type, content) = parse_object(&data);
