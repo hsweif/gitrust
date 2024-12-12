@@ -21,6 +21,7 @@ pub fn execute(command: Command) {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct IndexEntry {
     ctime: (u32, u32),
     mtime: (u32, u32),
@@ -50,17 +51,13 @@ fn load_index() -> io::Result<Vec<IndexEntry>> {
         ));
     }
 
-    // Read the version
-    let version = u32::from_be_bytes(buffer[4..8].try_into().unwrap());
-    println!("Index version: {}", version);
-
-    // Read the number of entries
+    let _version = u32::from_be_bytes(buffer[4..8].try_into().unwrap());
     let num_entries = u32::from_be_bytes(buffer[8..12].try_into().unwrap());
-    println!("Number of entries: {}", num_entries);
 
     let mut entries = Vec::new();
     let mut offset = 12;
     for _ in 0..num_entries {
+        // TODO: rewrite the offset management
         let ctime = (
             u32::from_be_bytes(buffer[offset..offset + 4].try_into().unwrap()),
             u32::from_be_bytes(buffer[offset + 4..offset + 8].try_into().unwrap()),
@@ -78,13 +75,8 @@ fn load_index() -> io::Result<Vec<IndexEntry>> {
         let sha1 = buffer[offset + 40..offset + 60].try_into().unwrap();
         let flags = u16::from_be_bytes(buffer[offset + 60..offset + 62].try_into().unwrap());
         let path_length = (flags & 0x0fff) as usize;
-        println!("path length: {:b}", path_length);
-        println!("mode: {:o}", mode);
-        println!("flag_str: {}", flags);
-        println!("sha1: {}", hex::encode(sha1));
         let path =
             String::from_utf8_lossy(&buffer[offset + 62..offset + 62 + path_length]).to_string();
-        println!("path: {}", path);
         entries.push(IndexEntry {
             ctime,
             mtime,
@@ -100,7 +92,7 @@ fn load_index() -> io::Result<Vec<IndexEntry>> {
         });
         // Move to the next entry, considering padding
         let entry_size = 62 + path_length;
-        let padding = (8 - (entry_size % 8)) % 8;
+        let padding = 8 - (entry_size % 8);
         offset += entry_size + padding;
     }
     Ok(entries)
