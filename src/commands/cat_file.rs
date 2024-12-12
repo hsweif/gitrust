@@ -11,6 +11,7 @@ pub fn execute(command: Command) {
         size_flag,
     } = command
     {
+        // TODO: parse git directory recursively
         let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
         match std::fs::read(&path) {
             Ok(data) => {
@@ -42,13 +43,11 @@ fn parse_object(data: &[u8]) -> (usize, String, Vec<u8>) {
     decoder
         .read_to_end(&mut decompressed_data)
         .expect("Failed to decompress data");
-
     // 2. Parse the decompressed data. Split header and content. Noting that git's header is in the format
     // [object type] [size]\0[content]
     if let Some(null_pos) = decompressed_data.iter().position(|&b| b == 0) {
         let header = &decompressed_data[..null_pos];
         let content = &decompressed_data[null_pos + 1..];
-
         // 3. Parse the header to get the object type and size
         if let Some(space_pos) = header.iter().position(|&b| b == b' ') {
             let object_type = &header[..space_pos];
