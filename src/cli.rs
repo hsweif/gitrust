@@ -27,5 +27,9 @@ pub enum Command {
         #[clap(short = 's')]
         size_flag: bool,
     },
+    LsFile {
+        #[clap(long = "stage")]
+        stage: bool,
+    },
     // ...other commands can be added here
 }

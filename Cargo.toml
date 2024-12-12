@@ -10,3 +10,4 @@ clap = { version = "4.0", features = ["derive"] }
 sha1 = "0.10"
 camino = "1.0"
 flate2 = "1.0"
+hex = "0.4"

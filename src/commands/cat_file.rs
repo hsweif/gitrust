@@ -105,6 +105,7 @@ fn parse_tree_object(data: &[u8]) -> String {
         let mode_str = str::from_utf8(mode).expect("Invalid mode");
         let mode: u32 = mode_str.parse().expect("Invalid number");
         let filename_str = str::from_utf8(filename).expect("Invalid filename");
+
         result.push_str(&format!("{:06} {}  {}\n", mode, hash_hex, filename_str));
     }
     result

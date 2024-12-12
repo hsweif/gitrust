@@ -29,5 +29,6 @@ fn main() {
             contents_flag,
             size_flag,
         }),
+        Command::LsFile { stage } => commands::ls_file::execute(Command::LsFile { stage }),
     }
 }
