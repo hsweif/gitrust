@@ -31,5 +31,6 @@ pub enum Command {
         #[clap(long = "stage")]
         stage: bool,
     },
+    WriteTree,
     // ...other commands can be added here
 }

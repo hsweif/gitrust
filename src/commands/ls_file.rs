@@ -22,21 +22,21 @@ pub fn execute(command: Command) {
 
 #[derive(Debug)]
 #[allow(dead_code)]
-struct IndexEntry {
+pub struct IndexEntry {
     ctime: (u32, u32),
     mtime: (u32, u32),
     dev: u32,
     inode: u32,
-    mode: u32,
+    pub mode: u32,
     uid: u32,
     gid: u32,
     file_size: u32,
-    sha1: [u8; 20],
+    pub sha1: [u8; 20],
     flags: u16,
-    path: String,
+    pub path: String,
 }
 
-fn load_index() -> io::Result<Vec<IndexEntry>> {
+pub fn load_index() -> io::Result<Vec<IndexEntry>> {
     let index_path = Path::new(".git/index");
     let mut file = File::open(index_path)?;
 

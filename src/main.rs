@@ -30,5 +30,6 @@ fn main() {
             size_flag,
         }),
         Command::LsFile { stage } => commands::ls_file::execute(Command::LsFile { stage }),
+        Command::WriteTree => commands::write_tree::execute(),
     }
 }
