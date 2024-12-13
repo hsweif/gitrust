@@ -1,4 +1,4 @@
-use super::blob::Blob;
+use super::{blob::Blob, tree::Tree};
 use flate2::read::ZlibDecoder;
 use std::io::{self, Read};
 
@@ -30,6 +30,8 @@ pub fn parse_object(data: &[u8]) -> Box<dyn Object> {
         let object_type = std::str::from_utf8(object_type).unwrap();
         match object_type {
             "blob" => Box::new(Blob::from_content(content)),
+            "tree" => Box::new(Tree::from_content(content)),
+            "commit" | "tag" => unimplemented!(),
             _ => panic!("Unknown object type"),
         }
     } else {
