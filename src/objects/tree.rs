@@ -30,7 +30,7 @@ impl Object for Tree {
         content
     }
 
-    fn from_content(data: Vec<u8>) -> Self {
+    fn from_content(data: Vec<u8>) -> Result<Self, Box<dyn std::error::Error>> {
         let mut entries = Vec::new();
         let mut i = 0;
         while i < data.len() {
@@ -54,11 +54,8 @@ impl Object for Tree {
             let sha1 = &data[i..i + 20]; // SHA-1 hash is 20 bytes
             let sha1: [u8; 20] = sha1.try_into().expect("Invalid hash");
             i += 20;
-            let filename_str = std::str::from_utf8(filename).expect("Invalid filename");
-            let mode: u32 = std::str::from_utf8(mode)
-                .expect("Invalid mode")
-                .parse()
-                .expect("Invalid mode");
+            let filename_str = std::str::from_utf8(filename)?;
+            let mode: u32 = std::str::from_utf8(mode)?.parse()?;
             entries.push(TreeEntry {
                 mode,
                 sha1,
@@ -69,7 +66,7 @@ impl Object for Tree {
         for (i, entry) in entries.iter().enumerate() {
             index.insert(entry.name.clone(), i);
         }
-        Tree { entries, index }
+        Ok(Tree { entries, index })
     }
 
     fn get_object_type(&self) -> &str {

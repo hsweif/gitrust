@@ -9,8 +9,8 @@ impl Object for Blob {
     fn get_content(&self) -> Vec<u8> {
         self.content.clone()
     }
-    fn from_content(content: Vec<u8>) -> Self {
-        Blob { content }
+    fn from_content(content: Vec<u8>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Blob { content })
     }
     fn get_object_type(&self) -> &str {
         "blob"
