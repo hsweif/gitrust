@@ -1,5 +1,5 @@
 use crate::cli::Command;
-use crate::objects::blob;
+use crate::objects::{blob, factory};
 use flate2::read::ZlibDecoder;
 use std::io::Read;
 use std::str;
@@ -12,22 +12,20 @@ pub fn execute(command: Command) {
         size_flag,
     } = command
     {
-        // TODO: parse git directory recursively
         let path = blob::get_file_path(&hash);
         match std::fs::read(&path) {
             Ok(data) => {
-                let (object_size, object_type, content) = parse_object(&data);
+                let object = factory::parse_object(&data);
                 if size_flag {
-                    println!("{}", object_size);
+                    println!("{}", object.get_object_size());
                 } else if contents_flag {
-                    if object_type == "tree" {
-                        print!("{}", parse_tree_object(&content));
-                    } else {
-                        let content = str::from_utf8(&content).expect("Invalid UTF-8");
-                        print!("{}", content);
+                    let content = object.get_content();
+                    match str::from_utf8(&content) {
+                        Ok(s) => print!("{}", s),
+                        Err(_) => eprintln!("Invalid UTF-8 in object"),
                     }
                 } else if type_flag {
-                    println!("{}", object_type);
+                    println!("{}", object.get_object_type());
                 } else {
                     eprintln!("No flags provided");
                 }
