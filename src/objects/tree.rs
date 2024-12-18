@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 use super::factory::Object;
 
@@ -14,18 +15,40 @@ pub struct TreeEntry {
     name: String,
 }
 
+impl fmt::Display for TreeEntry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{:06} {} {}",
+            &self.mode,
+            hex::encode(&self.sha1),
+            &self.name
+        )
+    }
+}
+
+impl fmt::Display for Tree {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // concat with '\n' for each entry but not for the last one
+        for entry in &self.entries[..self.entries.len() - 1] {
+            write!(f, "{}\n", entry)?;
+        }
+        if let Some(entry) = self.entries.last() {
+            write!(f, "{}", entry)?;
+        }
+        Ok(())
+    }
+}
+
 impl Object for Tree {
     fn get_content(&self) -> Vec<u8> {
         let mut content = Vec::new();
         for entry in &self.entries {
-            // TODO: add object type, which need to read from the DB
-            let entry_str = format!(
-                "{:06} {} {}\n",
-                entry.mode,
-                hex::encode(entry.sha1),
-                entry.name
-            );
-            content.extend(entry_str.as_bytes());
+            content.extend_from_slice(entry.mode.to_string().as_bytes());
+            content.push(b' ');
+            content.extend_from_slice(entry.name.as_bytes());
+            content.push(0);
+            content.extend_from_slice(&entry.sha1);
         }
         content
     }
@@ -52,7 +75,7 @@ impl Object for Tree {
             // Read hash
             i = filename_end + 1;
             let sha1 = &data[i..i + 20]; // SHA-1 hash is 20 bytes
-            let sha1: [u8; 20] = sha1.try_into().expect("Invalid hash");
+            let sha1: [u8; 20] = sha1.try_into()?;
             i += 20;
             let filename_str = std::str::from_utf8(filename)?;
             let mode: u32 = std::str::from_utf8(mode)?.parse()?;

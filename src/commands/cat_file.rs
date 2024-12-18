@@ -1,6 +1,5 @@
 use crate::cli::Command;
 use crate::objects::{blob, factory};
-use std::str;
 
 pub fn execute(command: Command) {
     if let Command::CatFile {
@@ -17,11 +16,8 @@ pub fn execute(command: Command) {
                     if size_flag {
                         println!("{}", object.get_object_size());
                     } else if contents_flag {
-                        let content = object.get_content();
-                        match str::from_utf8(&content) {
-                            Ok(s) => print!("{}", s),
-                            Err(_) => eprintln!("Invalid UTF-8 in object"),
-                        }
+                        // we can directly print the object because it implements std::fmt::Display
+                        print!("{}", object);
                     } else if type_flag {
                         println!("{}", object.get_object_type());
                     } else {

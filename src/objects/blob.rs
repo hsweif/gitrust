@@ -1,8 +1,16 @@
 use super::factory::Object;
 
-#[derive(Debug)]
 pub struct Blob {
     content: Vec<u8>,
+}
+
+impl std::fmt::Display for Blob {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match std::str::from_utf8(&self.content) {
+            Ok(content) => write!(f, "{}", content),
+            Err(_) => Err(std::fmt::Error),
+        }
+    }
 }
 
 impl Object for Blob {

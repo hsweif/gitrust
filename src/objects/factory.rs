@@ -2,7 +2,7 @@ use super::{blob::Blob, tree::Tree};
 use flate2::read::ZlibDecoder;
 use std::io::{self, Read};
 
-pub trait Object {
+pub trait Object: std::fmt::Display {
     fn get_content(&self) -> Vec<u8>; // Method to get the content of the object
     fn from_content(content: Vec<u8>) -> Result<Self, Box<dyn std::error::Error>>
     where
