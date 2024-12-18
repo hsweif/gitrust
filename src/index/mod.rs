@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::{self, Read},
-    path::Path,
-};
+use std::{error::Error, fs::File, io::Read, path::Path};
 
 pub mod entry;
 
@@ -28,7 +24,7 @@ impl std::fmt::Display for Entry {
     }
 }
 
-pub fn load_index() -> io::Result<Vec<Entry>> {
+pub fn load_index() -> Result<Vec<Entry>, Box<dyn Error>> {
     let index_path = Path::new(".git/index");
     let mut file = File::open(index_path)?;
 
@@ -37,10 +33,7 @@ pub fn load_index() -> io::Result<Vec<Entry>> {
 
     // Ensure the index file starts with the expected signature
     if &buffer[0..4] != b"DIRC" {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "Invalid index file signature",
-        ));
+        return Err("Invalid index file signature".into());
     }
 
     let _version = u32::from_be_bytes(buffer[4..8].try_into().unwrap());
@@ -51,24 +44,25 @@ pub fn load_index() -> io::Result<Vec<Entry>> {
     for _ in 0..num_entries {
         // TODO: rewrite the offset management
         let ctime = (
-            u32::from_be_bytes(buffer[offset..offset + 4].try_into().unwrap()),
-            u32::from_be_bytes(buffer[offset + 4..offset + 8].try_into().unwrap()),
+            read_u32(&buffer, &mut offset)?,
+            read_u32(&buffer, &mut offset)?,
         );
         let mtime = (
-            u32::from_be_bytes(buffer[offset + 8..offset + 12].try_into().unwrap()),
-            u32::from_be_bytes(buffer[offset + 12..offset + 16].try_into().unwrap()),
+            read_u32(&buffer, &mut offset)?,
+            read_u32(&buffer, &mut offset)?,
         );
-        let dev = u32::from_be_bytes(buffer[offset + 16..offset + 20].try_into().unwrap());
-        let inode = u32::from_be_bytes(buffer[offset + 20..offset + 24].try_into().unwrap());
-        let mode = u32::from_be_bytes(buffer[offset + 24..offset + 28].try_into().unwrap());
-        let uid = u32::from_be_bytes(buffer[offset + 28..offset + 32].try_into().unwrap());
-        let gid = u32::from_be_bytes(buffer[offset + 32..offset + 36].try_into().unwrap());
-        let file_size = u32::from_be_bytes(buffer[offset + 36..offset + 40].try_into().unwrap());
-        let sha1 = buffer[offset + 40..offset + 60].try_into().unwrap();
-        let flags = u16::from_be_bytes(buffer[offset + 60..offset + 62].try_into().unwrap());
+        let dev = read_u32(&buffer, &mut offset)?;
+        let inode = read_u32(&buffer, &mut offset)?;
+        let mode = read_u32(&buffer, &mut offset)?;
+        let uid = read_u32(&buffer, &mut offset)?;
+        let gid = read_u32(&buffer, &mut offset)?;
+        let file_size = read_u32(&buffer, &mut offset)?;
+        let sha1 = read_bytes::<20>(&buffer, &mut offset)?;
+        let flags = read_u16(&buffer, &mut offset)?;
         let path_length = (flags & 0x0fff) as usize;
-        let path =
-            String::from_utf8_lossy(&buffer[offset + 62..offset + 62 + path_length]).to_string();
+        let path = String::from_utf8_lossy(&buffer[offset..offset + path_length]).to_string();
+        offset += path_length;
+
         entries.push(Entry {
             ctime,
             mtime,
@@ -85,7 +79,34 @@ pub fn load_index() -> io::Result<Vec<Entry>> {
         // Move to the next entry, considering padding
         let entry_size = 62 + path_length;
         let padding = 8 - (entry_size % 8);
-        offset += entry_size + padding;
+        offset += padding;
     }
     Ok(entries)
+}
+
+fn read_u32(buffer: &[u8], offset: &mut usize) -> Result<u32, Box<dyn Error>> {
+    let bytes = buffer
+        .get(*offset..*offset + 4)
+        .ok_or("Index out of bounds")?;
+    *offset += 4;
+    Ok(u32::from_be_bytes(bytes.try_into()?))
+}
+
+fn read_u16(buffer: &[u8], offset: &mut usize) -> Result<u16, Box<dyn Error>> {
+    let bytes = buffer
+        .get(*offset..*offset + 2)
+        .ok_or("Index out of bounds")?;
+    *offset += 2;
+    Ok(u16::from_be_bytes(bytes.try_into()?))
+}
+
+fn read_bytes<'a, const N: usize>(
+    buffer: &'a [u8],
+    offset: &mut usize,
+) -> Result<[u8; N], Box<dyn Error>> {
+    let bytes = buffer
+        .get(*offset..*offset + N)
+        .ok_or("Index out of bounds")?;
+    *offset += N;
+    Ok(bytes.try_into()?)
 }
