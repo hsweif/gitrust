@@ -108,3 +108,59 @@ fn read_bytes<'a, const N: usize>(
     *offset += N;
     Ok(bytes.try_into()?)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_read_u32() {
+        let buffer = [0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02];
+        let mut offset = 0;
+        assert_eq!(read_u32(&buffer, &mut offset).unwrap(), 1);
+        assert_eq!(read_u32(&buffer, &mut offset).unwrap(), 2);
+    }
+
+    #[test]
+    fn test_read_u32_out_of_bounds() {
+        let buffer = [0x00, 0x00, 0x01];
+        let mut offset = 0;
+        assert!(read_u32(&buffer, &mut offset).is_err());
+    }
+
+    #[test]
+    fn test_read_u16() {
+        let buffer = [0x00, 0x01, 0x00, 0x02];
+        let mut offset = 0;
+        assert_eq!(read_u16(&buffer, &mut offset).unwrap(), 1);
+        assert_eq!(read_u16(&buffer, &mut offset).unwrap(), 2);
+    }
+
+    #[test]
+    fn test_read_u16_out_of_bounds() {
+        let buffer = [0x01];
+        let mut offset = 0;
+        assert!(read_u16(&buffer, &mut offset).is_err());
+    }
+
+    #[test]
+    fn test_read_bytes() {
+        let buffer = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05];
+        let mut offset = 0;
+        assert_eq!(
+            read_bytes::<3>(&buffer, &mut offset).unwrap(),
+            [0x00, 0x01, 0x02]
+        );
+        assert_eq!(
+            read_bytes::<3>(&buffer, &mut offset).unwrap(),
+            [0x03, 0x04, 0x05]
+        );
+    }
+
+    #[test]
+    fn test_read_bytes_out_of_bounds() {
+        let buffer = [0x01];
+        let mut offset = 0;
+        assert!(read_bytes::<2>(&buffer, &mut offset).is_err());
+    }
+}
