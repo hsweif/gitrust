@@ -1,10 +1,10 @@
 use crate::cli::Command;
-use crate::index;
+use crate::index::entry;
 
 pub fn execute(command: Command) {
     if let Command::LsFile { stage } = command {
         match stage {
-            true => match index::load_index() {
+            true => match entry::load_index() {
                 Ok(entries) => {
                     for entry in entries {
                         println!("{}", entry);
