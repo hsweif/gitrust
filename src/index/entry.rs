@@ -34,13 +34,12 @@ pub fn load_index() -> Result<Vec<Entry>, Box<dyn Error>> {
         return Err("Invalid index file signature".into());
     }
 
-    let _version = u32::from_be_bytes(buffer[4..8].try_into().unwrap());
-    let num_entries = u32::from_be_bytes(buffer[8..12].try_into().unwrap());
+    let _version = u32::from_be_bytes(buffer[4..8].try_into()?);
+    let num_entries = u32::from_be_bytes(buffer[8..12].try_into()?);
 
     let mut entries = Vec::new();
     let mut offset = 12;
     for _ in 0..num_entries {
-        // TODO: rewrite the offset management
         let ctime = (
             read_u32(&buffer, &mut offset)?,
             read_u32(&buffer, &mut offset)?,
